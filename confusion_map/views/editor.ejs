@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+		
+		<title>로그인 화면</title>
+		
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+    	
+		<script>
+			//모서리가 둥근 사각형 그리기 도구, 위젯들을 캔버스로 만든 폰 시뮬레이터에 그릴 예정
+			function strokeRoundedRect(ctx,x_position,y_position,width,height,radius){
+				ctx.beginPath();
+				ctx.moveto(x+radius,y);
+				ctx.arcTo(x+width,y        ,x+width,y+height,radius);
+				ctx.arcTo(x+width,y+height ,x      ,y+height,radius);
+				ctx.arcTo(x      ,y+height ,x      ,y       ,radius);
+				ctx.arcTo(x      ,y        ,x+width,y       ,radius);
+				ctx.stroke();
+			}
+
+			window.onload = function(){
+				var x_first=0;
+				var y_first=0;
+				var x_second=0;
+				var y_second=0;
+
+				var canvas = document.getElementById("editorpage");
+				var ctx=canvas.getContext("2d");
+				ctx.strokeRect(10,10,40,10);//(400,50)에 너비는 세번쨰 파라미터 높이는 네번쨰 파라미터
+				//strokeRoundedRect(ctx,20,30,40,10);
+
+				canvas.onclick=function(event){
+					var x=event.offsetX;
+					var y= event.offsetY;
+					document.getElementById("monitor3").innerHTML="x:"+x+","+"y:"+y;
+					if(x_first==0&y_first==0){
+					
+						x_first=x;
+						y_first=y;
+						
+						document.getElementById("monitor1").innerHTML="x_first:"+x_first+","+"y_first:"+y_first;
+					}else{
+						if(x_second==0&y_second==0){
+							x_second=x;
+							y_second=y;
+							document.getElementById("monitor2").innerHTML="x_second:"+x_second+","+"y_second:"+y_second;
+						}
+						
+						var width=(x_second-x_first);
+						var height=(y_second-y_first);
+						// ctx.moveto(x_first,y_first);
+						ctx.strokeRect(x_first,y_first,width,height);
+						x_first=0
+						y_first=0;
+			        	x_second=0
+						y_second=0;
+
+						
+					}
+				
+				}
+			}
+		</script>
+
+    	<style>
+        	body        { padding-top:80px; }
+			.box{
+				width: 550px;
+				height: 600px;
+				background-color: wheat;
+				border-color: black;
+				border-width: 0.5em;
+			
+			}
+			.box2{
+				width: 350px;
+				height: 600px;
+				background-color: gray;
+				border-color: black;
+				border-width: 0.5em;
+			}
+    	</style>
+    
+	</head>
+	<body>
+		<div >
+
+			<div>
+
+			        <div  >
+						<div style="margin-left: 1%;">
+							
+							<div  class="box2" style="float:left">
+								<p id="monitor1" style="color: black;">선택된 포인트 없음</p>
+								<p id="monitor2" style="color: brown;">선택된 포인트 없음</p>
+								<p id="monitor3" style="color: black;">선택된 포인트 없음</p>
+								<p id="monitor4" style="color: black;">선택된 포인트 없음</p>
+							</div>
+							<div  class="box2" style="float:right;  margin-right: 2%;" >
+								<button class="btn btn-default" style="width: 80px; " >게시판</button>
+								<button class="btn btn-default" style="width: 80px; " >소 게시판</button>
+								<button class="btn btn-default" style="width: 80px; " >공지사항</button>
+								<button class="btn btn-default" style="width: 80px; " >알림</button>
+								<button class="btn btn-default" style="width: 80px; " >이미지 박스</button>
+								<button class="btn btn-default" style="width: 80px; " >텍스트 박스</button>
+							
+							</div>
+							<div  class="box" style="float:right; margin-right: 3%;" >
+								<canvas class="box"  id="editorpage">
+							</div>
+
+						</div>
+					
+			        </div>
+			
+			
+			</div>
+		
+		</div>
+	</body>
+</html>

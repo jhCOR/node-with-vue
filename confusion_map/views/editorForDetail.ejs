@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+		
+		<title>Detail Page</title>
+		
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+		<script src="utils\editorMovement.js"></script>
+
+		<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+
+		<script>
+			//캔버스 관련 자바스크립트코드은 옮김
+			var img_L = 0;
+			var img_T = 0;
+			var i=0;//id를 부여하기 위한 변수, 다른 위젯버튼이라도 일괄적인 적용(위젯의 총 개수를 쉽게 알 수 있음)
+			var j=0;
+			var k=0;
+			var targetObj;
+			var ButtonId;
+			var wholeDocument;
+			var selectedBefore={};
+			
+			var monitor2=document.getElementById("monitor2");
+
+			function create2DArray(rows, columns) {
+				var arr = new Array(rows);
+				for (var i = 0; i < rows; i++) {
+					arr[i] = new Array(columns);
+				}
+				return arr;
+			}
+
+			function getLeft(o){
+				return parseInt(o.style.left.replace('px', ''));
+			}
+			function getTop(o){
+				return parseInt(o.style.top.replace('px', ''));
+			}
+
+			// 이미지 움직이기
+			function moveDrag(e){
+				var e_obj = window.event? window.event : e;
+				var dmvx = parseInt(e_obj.clientX + img_L);
+				var dmvy = parseInt(e_obj.clientY + img_T);
+				targetObj.style.left = dmvx +"px";
+				targetObj.style.top = dmvy +"px";
+				return false;
+			}
+
+			// 드래그 시작
+			function startDrag(e, obj){
+				targetObj = obj;
+				var e_obj = window.event? window.event : e;
+				img_L = getLeft(obj) - e_obj.clientX;
+				img_T = getTop(obj) - e_obj.clientY;
+
+				document.onmousemove = moveDrag;
+				document.onmouseup = stopDrag;
+				if(e_obj.preventDefault)e_obj.preventDefault();
+			}
+
+			// 드래그 멈추기
+			function stopDrag(){
+				document.onmousemove = null;
+				document.onmouseup = null;
+			}
+
+			function removeElement(){//사실 안정성을 위해 이렇게 ButtonId를 쓰면 안됨. 나중에 수정해야함
+				var widgetbox=document.getElementById("widgetbox");
+				var elementForRemove=document.getElementById(ButtonId);
+				widgetbox.removeChild(elementForRemove);
+				if(elementForRemove.innerText=='게시판'|elementForRemove.innerText=='알림'){
+					var list = document.getElementById("listForDetail");
+					var detailId='Detail'+ButtonId;
+					var detailButton=document.getElementById(detailId);
+					list.removeChild(detailButton);
+				}
+			}
+			
+			function addWidget(idNumber){
+			
+				var widgetbox=document.getElementById("widgetbox");
+				var idNumberToString=idNumber+"";
+				var selectedWidget=document.getElementById(idNumberToString);
+				var newButton=document.createElement("button");
+				newButton.id='W'+i;
+				i++;
+
+				newButton.style.position="absolute";
+				newButton.style.left=0;
+				newButton.style.top=0;
+
+				newButton.onmousedown=function(event){
+					startDrag(event,newButton);
+				}
+				
+				newButton.onclick=function(){//추후 더블 클릭 등으로 변경할 수 있음
+					var showWhatisSelected=document.getElementById("selectedButton");
+					var thisButton=newButton.innerText;
+					
+					ButtonId=newButton.id;//사이즈를 변환하는 버튼.
+					showWhatisSelected.innerHTML=thisButton+"선택됨"+"(id: "+ButtonId+")";
+				}
+
+				var newText=document.createTextNode(idNumberToString);
+				widgetbox.appendChild(newButton);
+				newButton.appendChild(newText);
+
+				if(newButton.innerText=='알림'){
+				
+					var list = document.getElementById("listForDetail");
+					var newDetailButton=document.createElement("button");
+					newDetailButton.id='Detail'+newButton.id;
+					var string=newButton.innerText+'('+newDetailButton.id+")";
+					var newDetailText=document.createTextNode(string);
+					j++;
+
+					// newDetailButton.onclick=function(){
+					// 	widgetbox2.style.visibility="hidden";
+					// 	box2.appendChild(detailWidgetBox);
+					// }
+
+					list.appendChild(newDetailButton);
+					newDetailButton.appendChild(newDetailText);
+					
+				}
+			
+				if(newButton.innerText=='이미지 박스'){//미리보기화면 만들어야함
+
+				var newInputTag= document.createElement('form');
+				newInputTag.enctype="multipart/form-data";
+				newInputTag.action="#"//벡엔드 처리 추후 업로드시 이미지도 일괄 업로드하는 코드 작성
+				newInputTag.method="post";
+				var newFile= document.createElement('input');
+				var te=document.createTextNode("이미지박스");
+				newFile.type="file";
+				
+				var sen=newFile.id;
+				var monitor1=document.getElementById("monitor1");
+				// monitor1.innerText=newFile.id;
+				
+				newButton.appendChild(newInputTag);
+				newInputTag.appendChild(newFile);
+
+				newFile.onchange = function(e) {
+					var fileReader = new FileReader();
+					fileReader.readAsDataURL(e.target.files[0]);
+					fileReader.onload = function(e) { 
+						//document.getElementById('thumnail').src = e.target.result;
+						var imgtag=document.createElement('img');
+						imgtag.style.width='200px';
+						imgtag.id="imgtag"+i;
+						newButton.appendChild(imgtag);
+						
+						document.getElementById(imgtag.id).src = e.target.result;
+						}
+				}
+				}
+			}
+			//묶음 상자는 여러 위젯들을 일렬로 정렬하도록 지원하는 도구. 이 안에 다른 위젯을 배치할 것임
+			
+			function setSizeOfWidget(){
+				var newWidth=document.getElementById("newWidth").value;//추후 현재 크기를 미리 넣을 것
+				var newHeigth=document.getElementById("newHeight").value;
+				var resizeButton=document.getElementById(ButtonId);
+				
+				resizeButton.style.width=newWidth+"px";//단위는 변경 가능 안붙여도 됨
+				resizeButton.style.height=newHeigth+"px";
+			}
+			function setContentWidget(){
+				var newcontent=document.getElementById("newcontent").value;//추후 현재 크기를 미리 넣을 것
+				var resetContentButton=document.getElementById(ButtonId);
+				resetContentButton.innerText=newcontent;
+			}
+		</script>
+
+    	<style>
+        	body        { padding-top:80px; }
+			.box{
+				width: 550px;
+				height: 600px;
+				background-color: wheat;
+				border-color: black;
+				border-width: 0.5em;
+			
+			}
+			.box1{
+				width: 550px;
+				height: 600px;
+				background-color: skyblue;
+				border-color: black;
+				border-width: 0.5em;
+			
+			}
+			.box2{
+				width: 350px;
+				height: 600px;
+				background-color: gray;
+				border-color: black;
+				border-width: 0.5em;
+			}
+			.box3{
+				width: auto;
+				height: 600px;
+				background-color: grey;
+			}
+    	</style>
+    
+	</head>
+	<body>
+		<div >
+			<div>
+			        <div  >
+						<div style="margin-left: 1%;">
+							
+							<div  class="box2" style="float: left;">
+								
+							
+								 <!-- <p id="monitor2" style="color: brown;">선택된 포인트 없음</p> -->
+								<!--<p id="monitor3" style="color: black;">선택된 포인트 없음</p>
+								<p id="monitor4" style="color: black;">선택된 포인트 없음</p> -->
+								<div  class="box3" id="controlbox" style="display:inline-block; ">
+									<p id="monitor1" style="color: black;">선택된 이미지 없음</p>
+									<img src="" id="thumnail" width="200px" />
+									<p id="selectedButton" style="color: red; font-size: large;"></p>
+									<label>너비</label>
+									<input type="text" name="width" id="newWidth" placeholder="너비 입력" style="width: 75px;">
+									<label>높이</label>
+									<input type="text" name="height"  id="newHeight" placeholder="높이 입력" style="width: 75px;">
+									<button class="btn btn-default" style="width: 80px; " onclick="setSizeOfWidget()">확인</button>
+									<p></p>
+									<label>텍스트 수정</label>
+									<input type="text" name="content" id="newcontent" placeholder="내용 입력" style="width: 75px;">
+									<button class="btn btn-default" style="width: 80px;" onclick="setContentWidget()" >완료</button>
+									<P></P>
+									<button class="btn btn-default" style="width: 80px;"  onclick="removeElement()" >요소 제거</button>
+
+								</div>
+							</div>
+							<!-- <div  class="box" id="widgetbox" style="display:inline-block; margin-left: 1%; ">
+								<div  class="box1" id="widgetbox2" style="display:inline-block; position: relative;">
+							
+								</div>
+							</div> -->
+							<div  class="box" id="widgetbox" style="display:inline-block; margin-left: 1%; position: relative;">
+							
+							</div>
+							<div  class="box2" style="float: right;" >
+								<button class="btn btn-default" id="4" style="width: 80px; " onclick="addWidget('알림')">알림</button>
+								<button class="btn btn-default" id="5" style="width: 80px; " onclick="addWidget('이미지 박스')">이미지 박스</button>
+								<button class="btn btn-default" id="6" style="width: 80px; " onclick="addWidget('텍스트 박스')">텍스트 박스</button>
+								<button class="btn btn-default" id="6" style="width: 80px; " onclick="addWidget('묶음 박스')">묶음 박스</button>
+							</div>
+							
+
+						</div>
+					
+			        </div>
+			
+				
+			</div>
+
+			<div id= "listForDetail" style="width:500px; color: blue; height: 50px;">
+	
+			</div>
+
+			<a href="/" class="btn btn-default"><span class="movebutton">홈으로</span></a>
+		</div>
+	</body>
+</html>
